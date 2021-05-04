@@ -1,0 +1,50 @@
+---
+title: "Big_Data_Project"
+author: "Group_5"
+output:
+  pdf_document: default
+---
+```{r Setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+```{r loadpackages, warning=FALSE, message=FALSE}
+pacman::p_load( ggplot2,zeallot,data.table, forecast, DBI, Hmisc, caret, dplyr)
+options(digits = 3)
+knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6, 
+                      fig.path = 'Figs/')
+theme_set(theme_classic())
+```
+
+```{r Data loading}
+riskfactor.df <- read.csv("E:\\bigdata\\project\\Bigdata_project\\query_result.csv")
+#formatting data
+riskfactor.df$events <- as.numeric(as.integer(riskfactor.df$events))
+riskfactor.df$totmiles <- as.numeric(as.integer(riskfactor.df$totmiles))
+#Data Partition
+train.index <- sample(1:nrow(riskfactor.df), round(0.8*nrow(riskfactor.df))) 
+train.df <- riskfactor.df[train.index, ]
+valid.df <- riskfactor.df[-train.index, ]
+str(train.df)
+str(valid.df)
+```
+
+```{r Linear Regression}
+riskfactor.lm <- lm(riskfactor ~ totmiles + events, data = train.df)
+summary(riskfactor.lm)
+
+```
+```{r}
+riskfactor.pred <- predict(riskfactor.lm,valid.df)
+accuracy(riskfactor.pred,valid.df$riskfactor)
+```
+
+
+```{r Actual vs Predicted}
+plot(riskfactor.pred,valid.df$riskfactor,
+     xlab="Predicted",ylab="Actual")
+abline(a=0,b=1)
+```
+
+
+
